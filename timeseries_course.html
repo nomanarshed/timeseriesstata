@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Series Analysis in Stata — Complete Video Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:     #0f0e0b;
+    --paper:   #f5f0e8;
+    --cream:   #ede7d9;
+    --rule:    #ccc4b0;
+    --muted:   #7a7060;
+    --stage1:  #2c5f8a;
+    --stage2:  #1a7a4a;
+    --stage3:  #8b4513;
+    --stage4:  #6b2d8b;
+    --gold:    #e8c88a;
+    --mono:    'IBM Plex Mono', monospace;
+    --serif:   'Source Serif 4', Georgia, serif;
+    --display: 'Playfair Display', Georgia, serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 72px 40px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,.04) 59px, rgba(255,255,255,.04) 60px),
+      repeating-linear-gradient(0deg,  transparent, transparent 59px, rgba(255,255,255,.04) 59px, rgba(255,255,255,.04) 60px);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--stage1) 0%, var(--stage2) 33%, var(--stage3) 66%, var(--stage4) 100%);
+  }
+  .header-inner { max-width: 860px; margin: 0 auto; position: relative; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,.5);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    margin-bottom: 20px;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .header-sub {
+    font-size: 1.05rem;
+    color: rgba(245,240,232,.75);
+    max-width: 580px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+  .header-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-num { font-family: var(--display); font-size: 2rem; font-weight: 700; color: var(--gold); }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,.5);
+  }
+
+  /* ── TOC ── */
+  nav.toc {
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 20px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(15,14,11,.07);
+  }
+  .toc-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .toc-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid currentColor;
+    text-decoration: none;
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .toc-pill.s1 { color: var(--stage1); }
+  .toc-pill.s2 { color: var(--stage2); }
+  .toc-pill.s3 { color: var(--stage3); }
+  .toc-pill.s4 { color: var(--stage4); }
+  .toc-pill.s1:hover { background: var(--stage1); color: white; border-color: var(--stage1); }
+  .toc-pill.s2:hover { background: var(--stage2); color: white; border-color: var(--stage2); }
+  .toc-pill.s3:hover { background: var(--stage3); color: white; border-color: var(--stage3); }
+  .toc-pill.s4:hover { background: var(--stage4); color: white; border-color: var(--stage4); }
+
+  /* ── MAIN ── */
+  main { max-width: 860px; margin: 0 auto; padding: 60px 40px 80px; }
+
+  /* ── INTRO ── */
+  .intro {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .intro p + p { margin-top: 16px; }
+  .intro strong { font-weight: 600; border-bottom: 1.5px solid #c0392b; }
+
+  /* ── STAGE ── */
+  .stage {
+    margin-bottom: 48px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .stage-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .stage-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 3px;
+    color: var(--paper);
+    flex-shrink: 0;
+  }
+  .s1 .stage-badge { background: var(--stage1); }
+  .s2 .stage-badge { background: var(--stage2); }
+  .s3 .stage-badge { background: var(--stage3); }
+  .s4 .stage-badge { background: var(--stage4); }
+  .stage-title {
+    font-family: var(--display);
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .stage-intro {
+    color: var(--muted);
+    font-size: .93rem;
+    margin-bottom: 28px;
+    max-width: 700px;
+    font-style: italic;
+    line-height: 1.65;
+  }
+
+  /* ── TRANSITION BLOCK ── */
+  .stage-transition {
+    background: var(--ink);
+    color: rgba(245,240,232,.82);
+    border-radius: 4px;
+    padding: 28px 36px;
+    margin: -16px 0 48px;
+    font-size: .9rem;
+    line-height: 1.7;
+    position: relative;
+  }
+  .stage-transition::before {
+    content: '→';
+    font-family: var(--mono);
+    color: var(--gold);
+    margin-right: 12px;
+    font-size: 1rem;
+  }
+
+  /* ── VIDEO LIST ── */
+  .video-list { display: flex; flex-direction: column; gap: 2px; }
+
+  .video-card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: box-shadow .2s, transform .15s;
+  }
+  .video-card:hover {
+    box-shadow: 0 4px 20px rgba(15,14,11,.1);
+    transform: translateY(-1px);
+  }
+  .video-card-inner { display: grid; grid-template-columns: 4px 1fr; }
+  .card-stripe { flex-shrink: 0; }
+  .s1 .card-stripe { background: var(--stage1); }
+  .s2 .card-stripe { background: var(--stage2); }
+  .s3 .card-stripe { background: var(--stage3); }
+  .s4 .card-stripe { background: var(--stage4); }
+  .card-body { padding: 18px 22px 18px 20px; }
+  .card-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 9px;
+  }
+  .card-desc {
+    font-size: .87rem;
+    color: #4a4540;
+    line-height: 1.6;
+    margin-bottom: 13px;
+  }
+  code {
+    font-family: var(--mono);
+    font-size: .82em;
+    background: #f0ebe0;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── VIDEO LINK BUTTON ── */
+  .video-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 3px;
+    border: 1.5px solid;
+    transition: all .18s;
+  }
+  .s1 .video-link { color: var(--stage1); border-color: var(--stage1); }
+  .s2 .video-link { color: var(--stage2); border-color: var(--stage2); }
+  .s3 .video-link { color: var(--stage3); border-color: var(--stage3); }
+  .s4 .video-link { color: var(--stage4); border-color: var(--stage4); }
+  .s1 .video-link:hover { background: var(--stage1); color: white; }
+  .s2 .video-link:hover { background: var(--stage2); color: white; }
+  .s3 .video-link:hover { background: var(--stage3); color: white; }
+  .s4 .video-link:hover { background: var(--stage4); color: white; }
+  .video-link[href="#LINK"] {
+    opacity: .38;
+    cursor: not-allowed;
+    pointer-events: none;
+    border-style: dashed;
+  }
+  .play-icon { width: 14px; height: 14px; fill: currentColor; }
+
+  /* ── CLOSING ── */
+  .closing {
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 6px;
+    padding: 40px 44px;
+    margin-top: 16px;
+  }
+  .closing h3 {
+    font-family: var(--display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--gold);
+  }
+  .closing p { font-size: .93rem; color: rgba(245,240,232,.82); line-height: 1.7; }
+  .closing p + p { margin-top: 12px; }
+  .closing code { background: rgba(255,255,255,.12); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 48px 24px 40px; }
+    main { padding: 40px 24px 60px; }
+    nav.toc { padding: 16px 20px; }
+    .closing { padding: 28px 24px; }
+    .stage-transition { padding: 22px 24px; }
+  }
+
+  /* ── FLOWCHART SECTION ── */
+  .flowchart-section {
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 44px 40px;
+  }
+  .flowchart-inner { max-width: 860px; margin: 0 auto; }
+  .fc-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .flowchart {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .fc-node {
+    flex: 1;
+    min-width: 160px;
+    background: white;
+    border: 1.5px solid var(--rule);
+    border-radius: 6px;
+    padding: 20px 16px 16px;
+    text-decoration: none;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .fc-node::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .fc-node.s1::before { background: var(--stage1); }
+  .fc-node.s2::before { background: var(--stage2); }
+  .fc-node.s3::before { background: var(--stage3); }
+  .fc-node.s4::before { background: var(--stage4); }
+  .fc-node:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(15,14,11,.14); }
+  .fc-node.s1:hover { border-color: var(--stage1); }
+  .fc-node.s2:hover { border-color: var(--stage2); }
+  .fc-node.s3:hover { border-color: var(--stage3); }
+  .fc-node.s4:hover { border-color: var(--stage4); }
+  .fc-stage-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+  .s1 .fc-stage-tag { color: var(--stage1); }
+  .s2 .fc-stage-tag { color: var(--stage2); }
+  .s3 .fc-stage-tag { color: var(--stage3); }
+  .s4 .fc-stage-tag { color: var(--stage4); }
+  .fc-node-title {
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .fc-node-sub { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+  .fc-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .fc-pills span {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--cream);
+    color: var(--muted);
+    letter-spacing: .04em;
+    transition: background .18s, color .18s;
+  }
+  .s1:hover .fc-pills span { background: #ddeeff; color: var(--stage1); }
+  .s2:hover .fc-pills span { background: #ddf5e8; color: var(--stage2); }
+  .s3:hover .fc-pills span { background: #f5e8d8; color: var(--stage3); }
+  .s4:hover .fc-pills span { background: #ede0f5; color: var(--stage4); }
+  .fc-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 8px;
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+  .fc-arrow svg { width: 36px; height: 20px; }
+  .fc-arrow span {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  @media (max-width: 700px) {
+    .flowchart-section { padding: 32px 20px; }
+    .fc-node { min-width: 130px; padding: 14px 10px 10px; }
+    .fc-node-title { font-size: .86rem; }
+    .fc-arrow svg { width: 22px; }
+    .fc-arrow span { display: none; }
+  }
+
+  /* ── INSTRUCTOR SECTION ── */
+  .instructor-section {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 60px 40px;
+  }
+  .instructor-inner { max-width: 860px; margin: 0 auto; }
+  .instructor-head {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .instructor-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--stage1) 0%, var(--stage4) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .instructor-kicker {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,.45);
+    margin-bottom: 6px;
+  }
+  .instructor-name {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--gold);
+  }
+  .instructor-role { font-size: .88rem; color: rgba(245,240,232,.7); line-height: 1.6; margin-bottom: 16px; }
+  .instructor-role em { color: rgba(245,240,232,.45); font-style: normal; }
+  .instructor-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ilink {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(245,240,232,.25);
+    color: rgba(245,240,232,.75);
+    text-decoration: none;
+    transition: all .18s;
+  }
+  .ilink:hover { background: rgba(245,240,232,.12); color: var(--gold); border-color: var(--gold); }
+  .instructor-body { display: flex; flex-direction: column; gap: 36px; }
+  .instructor-bio p { font-size: .9rem; color: rgba(245,240,232,.8); line-height: 1.75; }
+  .instructor-bio p + p { margin-top: 12px; }
+  .instructor-bio strong { color: var(--gold); font-weight: 600; }
+  .instructor-bio code { font-family: var(--mono); font-size: .8em; background: rgba(255,255,255,.1); padding: 1px 5px; border-radius: 3px; }
+  .instructor-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 2px;
+  }
+  .istat {
+    background: rgba(255,255,255,.05);
+    border-radius: 4px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .istat-num { font-family: var(--display); font-size: 1.5rem; font-weight: 700; color: var(--gold); line-height: 1; }
+  .istat-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: rgba(245,240,232,.45); line-height: 1.4; }
+  .pkg-title { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: rgba(245,240,232,.45); margin-bottom: 12px; }
+  .pkg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 8px; }
+  .pkg-card {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 4px;
+    padding: 14px 16px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: background .18s, border-color .18s;
+  }
+  .pkg-card:hover { background: rgba(255,255,255,.1); border-color: var(--gold); }
+  .pkg-name { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .1em; color: var(--gold); }
+  .pkg-desc { font-size: .78rem; color: rgba(245,240,232,.6); line-height: 1.4; }
+  @media (max-width: 600px) {
+    .instructor-section { padding: 40px 24px; }
+    .instructor-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .pkg-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <p class="kicker">Complete Video Course &nbsp;·&nbsp; Econometrics Made Easy with Stata</p>
+    <h1>Time Series Analysis<br><em>in Stata</em></h1>
+    <p class="header-sub">A structured playlist from importing raw data through dynamic modelling, causality, and volatility — organised as a four-stage learning path covering the full applied time series workflow.</p>
+    <div class="header-stats">
+      <div class="stat"><span class="stat-num">12</span><span class="stat-label">Videos</span></div>
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Stages</span></div>
+      <div class="stat"><span class="stat-num">13</span><span class="stat-label">Live Links</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="toc-inner">
+    <span class="toc-label">Jump to</span>
+    <a href="#stage1" class="toc-pill s1">Stage 1 — Foundations (3 videos)</a>
+    <a href="#stage2" class="toc-pill s2">Stage 2 — Regression &amp; ARDL (4 videos)</a>
+    <a href="#stage3" class="toc-pill s3">Stage 3 — Causality &amp; Dynamics (3 videos)</a>
+    <a href="#stage4" class="toc-pill s4">Stage 4 — Volatility &amp; Projection (2 videos)</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ FLOWCHART ═══════════════════════════ -->
+<section class="flowchart-section">
+  <div class="flowchart-inner">
+    <p class="fc-label">Course Roadmap &mdash; Click any stage to jump directly to its videos</p>
+    <div class="flowchart">
+
+      <a href="#stage1" class="fc-node s1">
+        <div class="fc-stage-tag">Stage 1</div>
+        <div class="fc-node-title">Foundations &amp; Data</div>
+        <div class="fc-node-sub">3 videos &middot; Import, transform &amp; declare your series</div>
+        <div class="fc-pills">
+          <span>tsset</span><span>import</span><span>kmtest</span><span>ipolate</span>
+        </div>
+      </a>
+
+      <div class="fc-arrow">
+        <svg viewBox="0 0 40 24" fill="none"><path d="M0 12 H32 M26 6 L38 12 L26 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>data ready</span>
+      </div>
+
+      <a href="#stage2" class="fc-node s2">
+        <div class="fc-stage-tag">Stage 2</div>
+        <div class="fc-node-title">Regression &amp; ARDL</div>
+        <div class="fc-node-sub">4 videos &middot; OLS diagnostics, ARDL &amp; its variants</div>
+        <div class="fc-pills">
+          <span>regress</span><span>ardl</span><span>NARDL</span><span>Fourier</span>
+        </div>
+      </a>
+
+      <div class="fc-arrow">
+        <svg viewBox="0 0 40 24" fill="none"><path d="M0 12 H32 M26 6 L38 12 L26 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>models built</span>
+      </div>
+
+      <a href="#stage3" class="fc-node s3">
+        <div class="fc-stage-tag">Stage 3</div>
+        <div class="fc-node-title">Causality &amp; Dynamics</div>
+        <div class="fc-node-sub">3 videos &middot; Causality tests, rolling windows &amp; ECM</div>
+        <div class="fc-pills">
+          <span>Toda&ndash;Yamamoto</span><span>Granger</span><span>rolling</span><span>ECM</span>
+        </div>
+      </a>
+
+      <div class="fc-arrow">
+        <svg viewBox="0 0 40 24" fill="none"><path d="M0 12 H32 M26 6 L38 12 L26 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>dynamics understood</span>
+      </div>
+
+      <a href="#stage4" class="fc-node s4">
+        <div class="fc-stage-tag">Stage 4</div>
+        <div class="fc-node-title">Volatility &amp; Projection</div>
+        <div class="fc-node-sub">2 videos &middot; Conditional variance &amp; visualising results</div>
+        <div class="fc-pills">
+          <span>ARCH</span><span>GARCH</span><span>regproject</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<main>
+
+  <div class="intro">
+    <p>Time series analysis sits at the centre of applied macroeconomics, finance, and energy economics. Whenever a single entity is observed over time — a country's GDP, an exchange rate, a commodity price, a firm's returns — the time dimension brings its own set of problems: trends, unit roots, autocorrelation, seasonality, structural breaks, and changing volatility. Stata handles all of it, but the commands are spread across a wide methodological range, from simple regression to ARDL, causality testing, error correction, and GARCH.</p>
+    <p>This playlist organises the workflow into a sensible learning path. <strong>Work through the stages in order.</strong> Each one assumes the previous: you cannot interpret an ARDL bounds test without first getting the series imported and stationarity sorted, and the logic of error correction only makes sense once the regression and cointegration foundations are in place.</p>
+  </div>
+
+  <!-- ════════════ STAGE 1 ════════════ -->
+  <section class="stage s1" id="stage1">
+    <div class="stage-header">
+      <span class="stage-badge">Stage 1</span>
+      <h2 class="stage-title">Foundations &amp; Data Management</h2>
+    </div>
+    <p class="stage-intro">Every time series analysis is only as reliable as the series behind it. Before any model runs, the data must be brought in cleanly, declared to Stata as time series, transformed appropriately, and free of internal gaps. This stage covers the unglamorous but decisive groundwork — getting data out of Excel, deciding whether to work in levels or logs, and repairing missing observations without distorting the underlying dynamics.</p>
+    <div class="video-list">
+
+      <!-- VIDEO 01 -->
+      <div class="video-card s1">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">01 / Stage 1</div>
+            <div class="card-title">How to Import Time Series Data in Stata from Excel</div>
+            <p class="card-desc">Start here. A quick, practical guide for beginners on bringing time series data from Excel into Stata correctly — getting the date variable recognised, declaring the series with <code>tsset</code>, and avoiding the import mistakes that quietly break later commands.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=_j_yDYq81eE" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 02 -->
+      <div class="video-card s1">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">02 / Stage 1</div>
+            <div class="card-title">Choosing Between Level and Logarithmic Transformation — KMTEST in Stata</div>
+            <p class="card-desc">Whether to model a series in raw levels or in logs is not a matter of taste — it changes interpretation and can change your results. This video explains how to use the <code>kmtest</code> command to decide formally whether a log transformation is appropriate for your data.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=72Yp1djo_0M" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 03 -->
+      <div class="video-card s1">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">03 / Stage 1</div>
+            <div class="card-title">Filling / Interpolating Missing In-Between Values in Panel &amp; Time Series Data</div>
+            <p class="card-desc">Gaps inside a series break lag operators and shrink your estimation sample. This video covers how to handle internal missing observations by interpolating with <code>ipolate</code>, restoring a continuous series ready for dynamic modelling.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=XxmZJxn2kRw" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════ STAGE 2 ════════════ -->
+  <section class="stage s2" id="stage2">
+    <div class="stage-header">
+      <span class="stage-badge">Stage 2</span>
+      <h2 class="stage-title">Regression &amp; ARDL Models</h2>
+    </div>
+    <p class="stage-intro">With clean, stationary-checked data in hand, this stage builds the core modelling toolkit. It starts with simple time series regression and the diagnostics that must accompany it, then moves into the ARDL family — the workhorse for series mixing I(0) and I(1) variables — and its more specialised variants for asymmetry and seasonality.</p>
+    <div class="stage-transition">
+      Stage 1 leaves you with a properly declared, gap-free series. From here, the question becomes how variables relate over time. ARDL is the natural starting framework because it tolerates mixed orders of integration and recovers both short-run and long-run effects in one specification — which is why so much applied time series work lives here.
+    </div>
+    <div class="video-list">
+
+      <!-- VIDEO 04 -->
+      <div class="video-card s2">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">04 / Stage 2</div>
+            <div class="card-title">Simple Time Series Regression in Stata with Diagnostics</div>
+            <p class="card-desc">A comprehensive tutorial on running a basic time series regression and, crucially, performing the diagnostic tests that come with it — autocorrelation, heteroskedasticity, and stability checks. The diagnostics are not optional housekeeping; they determine whether the regression can be trusted at all.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=B4Kreehoz8w" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 05 -->
+      <div class="video-card s2">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">05 / Stage 2</div>
+            <div class="card-title">The Family of Time Series ARDL Models in Stata</div>
+            <p class="card-desc">A wide overview of the ARDL variants available in Stata, from the basic Pesaran bounds-test model to bootstrap, Fourier, asymmetric (NARDL), quantile, and hybrid combinations. Covers the Basic, Bootstrap, Fourier, Fourier-Bootstrap, Asymmetric (NARDL), Bootstrap-NARDL, Fourier-NARDL, Fourier-Bootstrap-NARDL, Quantile, and Fourier-Quantile ARDL specifications — a map of which variant fits which data problem.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=3mAVnFkYDW8" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 06 -->
+      <div class="video-card s2">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">06 / Stage 2</div>
+            <div class="card-title">Asymmetric Effects ARDL / Non-Linear ARDL (NARDL) in Stata</div>
+            <p class="card-desc">Many relationships are asymmetric — a price rise and a price fall of equal size do not produce mirror-image responses. This video focuses on the NARDL model, which decomposes a regressor into its positive and negative partial sums to capture these asymmetric short- and long-run effects.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=6m4wC43hhT4" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 07 -->
+      <div class="video-card s2">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">07 / Stage 2</div>
+            <div class="card-title">Handling Seasonal / Cyclic High-Frequency Data — Fourier Quantile ARDL</div>
+            <p class="card-desc">High-frequency series often carry periodic and cyclical structure that a standard model cannot absorb. This video teaches how to handle seasonality and cycles using the Fourier Quantile ARDL approach, combining Fourier terms for smooth structural shifts with quantile estimation across the conditional distribution.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=7I-znu2D_Ao" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════ STAGE 3 ════════════ -->
+  <section class="stage s3" id="stage3">
+    <div class="stage-header">
+      <span class="stage-badge">Stage 3</span>
+      <h2 class="stage-title">Causality &amp; Dynamics</h2>
+    </div>
+    <p class="stage-intro">Estimating a relationship is not the same as understanding its direction or its dynamics over time. This stage covers the tools that go beyond a single fitted equation — formal causality testing that is robust to integration order, rolling-window estimation that reveals how relationships evolve, and the error correction framework that ties short-run movements to a long-run equilibrium.</p>
+    <div class="video-list">
+
+      <!-- VIDEO 08 -->
+      <div class="video-card s3">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">08 / Stage 3</div>
+            <div class="card-title">Time Series Causality Tests — Toda-Yamamoto, Fourier &amp; Quantile Variants</div>
+            <p class="card-desc">Granger causality testing is sensitive to the integration and cointegration properties of the data. This video demonstrates how to run several causality tests, including the robust Toda-Yamamoto approach that sidesteps pre-testing pitfalls, along with Fourier and quantile variants for breaks and distributional causality.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=Xi768WF7QIo" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 09 -->
+      <div class="video-card s3">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">09 / Stage 3</div>
+            <div class="card-title">Rolling Window ADF, ARDL &amp; Granger Causality Tests in Stata</div>
+            <p class="card-desc">A single full-sample estimate hides the fact that relationships and stationarity shift over time. This video shows how to use rolling windows to track how unit-root behaviour, long-run coefficients, and causality direction change across sub-periods — often revealing instability a static model would miss entirely.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=y0ruMNTNd9E" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 10 -->
+      <div class="video-card s3">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">10 / Stage 3</div>
+            <div class="card-title">Estimating a Simple Two-Step ECM in Stata</div>
+            <p class="card-desc">When variables are cointegrated, the error correction model separates the long-run equilibrium from the short-run adjustment back towards it. This step-by-step walkthrough of the two-step ECM is aimed at beginners. For the underlying theory, the accompanying clip covers the basic concepts of the ECM equations before you estimate.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=md-GCQo5qEs" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+            <a class="video-link" href="https://youtu.be/M9Rm2kkSJ_k" target="_blank" style="margin-left:8px;">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              ECM Concepts
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════ STAGE 4 ════════════ -->
+  <section class="stage s4" id="stage4">
+    <div class="stage-header">
+      <span class="stage-badge">Stage 4</span>
+      <h2 class="stage-title">Volatility &amp; Projection</h2>
+    </div>
+    <p class="stage-intro">The final stage moves from modelling the mean of a series to modelling its variance, and then to communicating results. Financial and high-frequency data routinely show volatility clustering that the mean models in earlier stages assume away. This stage closes the course with conditional volatility modelling and a tool for turning estimated relationships into clear, projectable visuals.</p>
+    <div class="stage-transition">
+      Everything up to here has modelled the conditional mean — what a series is expected to do on average. But in finance and energy data, the interesting action is often in the variance: quiet periods punctuated by bursts of turbulence. ARCH and GARCH models exist precisely to capture that, and they are the natural endpoint once the mean dynamics are well understood.
+    </div>
+    <div class="video-list">
+
+      <!-- VIDEO 11 -->
+      <div class="video-card s4">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">11 / Stage 4</div>
+            <div class="card-title">Overview of ARCH–GARCH Models in Stata</div>
+            <p class="card-desc">When volatility clusters — large changes followed by large changes — the constant-variance assumption fails. This video explains the concepts behind ARCH and GARCH models and walks through estimating them in Stata to capture time-varying conditional volatility in financial and high-frequency series.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=s1Sp4kuynsk" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO 12 -->
+      <div class="video-card s4">
+        <div class="video-card-inner">
+          <div class="card-stripe"></div>
+          <div class="card-body">
+            <div class="card-num">12 / Stage 4</div>
+            <div class="card-title">regproject: Visualising Regression Projections in Stata</div>
+            <p class="card-desc">A coefficient table rarely communicates a result as clearly as a well-built projection plot. This video introduces the <code>regproject</code> command for visualising and projecting regression results across cross-sectional, panel, and time series settings — turning estimates into figures ready for papers and presentations.</p>
+            <a class="video-link" href="https://www.youtube.com/watch?v=G6QivqE_Guo" target="_blank">
+              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="closing">
+    <h3>A note on sequencing</h3>
+    <p>Stage 1 is a prerequisite, not a suggestion. If your series is not imported and declared correctly with <code>tsset</code>, the lag and difference operators that every later command relies on will either fail or silently mislead. If you have not settled the levels-versus-logs and stationarity questions, an ARDL bounds test in Stage 2 cannot be interpreted.</p>
+    <p>Stages 3 and 4 carry more flexibility depending on your research focus. If your interest is the direction of influence between variables, the causality and ECM videos are the core. If you work with financial or high-frequency data, the ARCH–GARCH material is where the real questions live. The stronger your foundation before specialising, the better your instincts will be when something goes wrong — and in time series, the trouble usually hides in the data preparation you were tempted to rush.</p>
+    <p>These methods are genuinely hard to use well. The places where they break — a missed unit root, an ignored break, an autocorrelated residual — are rarely obvious until a reviewer asks the question you should have asked yourself.</p>
+  </div>
+
+</main>
+
+
+<!-- ═══════════════════════════ INSTRUCTOR ═══════════════════════════ -->
+<section class="instructor-section" id="instructor">
+  <div class="instructor-inner">
+
+    <div class="instructor-head">
+      <div class="instructor-avatar">NA</div>
+      <div class="instructor-title-block">
+        <p class="instructor-kicker">Your Instructor</p>
+        <h2 class="instructor-name">Dr. Noman Arshed</h2>
+        <p class="instructor-role">
+          Senior Lecturer, Department of Business Analytics<br>
+          Sunway Business School &middot; Sunway University, Malaysia<br>
+          <em>AACSB Accredited &middot; Program Leader, MsBA ODL</em>
+        </p>
+        <div class="instructor-links">
+          <a href="https://scholar.google.com/citations?user=oUfi6FQAAAAJ&hl=en" target="_blank" class="ilink">Google Scholar</a>
+          <a href="https://www.scopus.com/authid/detail.uri?authorId=57190409735" target="_blank" class="ilink">Scopus</a>
+          <a href="https://www.webofscience.com/wos/author/record/O-6966-2019" target="_blank" class="ilink">Web of Science</a>
+          <a href="https://orcid.org/0000-0002-8940-5391" target="_blank" class="ilink">ORCID</a>
+          <a href="https://pk.linkedin.com/pub/noman-arshed/19/b51/67a" target="_blank" class="ilink">LinkedIn</a>
+          <a href="https://econistics.com" target="_blank" class="ilink">Econistics.com</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="instructor-body">
+
+      <div class="instructor-bio">
+        <p>Dr. Noman Arshed is an applied econometrician whose work spans environmental economics, Islamic finance, institutional quality, energy economics, and panel data methodology. He holds a PhD in Islamic Banking &amp; Finance from UMT Pakistan, an MSc in Economics &amp; Finance from the <strong>University of Edinburgh</strong>, and a BSc (Honours) in Economics from Forman Christian College University. With over ten years of teaching experience across undergraduate, MPhil, MBA, and PhD levels in Pakistan and Malaysia, his courses have consistently drawn student satisfaction scores above 90%.</p>
+        <p>He is currently Senior Lecturer and Program Leader for the Masters of Business Analytics (ODL) at <strong>Sunway Business School</strong>, an AACSB-accredited institution. In 2025 he received both the Outstanding Quantity and Quality of Research Award and the Immersion and Mobility Program Award at Sunway. He is ranked in the top 0.13% of scholars globally by ScholarGPS (2024) and 11th among the top 25% of authors by 10-year publication record on IDEAS/REPEC.</p>
+        <p>Beyond research and teaching, Dr. Arshed runs <strong>Econistics.com</strong> &mdash; an applied econometrics education platform &mdash; and the YouTube channel <em>Econometrics Made Easy with Stata</em>, from which this course is drawn. He has authored <em>Applied Cross-Sectional Econometrics</em> (KSP Books, 2020) and developed five open-source Stata packages on the Boston College SSC archive: <code>xtqrplot</code>, <code>coefconv</code>, <code>regproject</code>, <code>qmodplot</code>, and <code>xtbalfront</code>.</p>
+      </div>
+
+      <div class="instructor-stats-grid">
+        <div class="istat"><span class="istat-num">203</span><span class="istat-label">Journal Articles &amp; Chapters</span></div>
+        <div class="istat"><span class="istat-num">3,978</span><span class="istat-label">Google Scholar Citations</span></div>
+        <div class="istat"><span class="istat-num">h&thinsp;=&thinsp;33</span><span class="istat-label">h-index (Google Scholar)</span></div>
+        <div class="istat"><span class="istat-num">110</span><span class="istat-label">Scopus-Listed Papers</span></div>
+        <div class="istat"><span class="istat-num">356</span><span class="istat-label">Total Impact Factor</span></div>
+        <div class="istat"><span class="istat-num">10+</span><span class="istat-label">Years Teaching</span></div>
+        <div class="istat"><span class="istat-num">6</span><span class="istat-label">PhD Students Supervised</span></div>
+        <div class="istat"><span class="istat-num">Top 0.13%</span><span class="istat-label">ScholarGPS Global Rank 2024</span></div>
+      </div>
+
+      <div class="instructor-packages">
+        <p class="pkg-title">Open-Source Stata Packages &mdash; Boston College SSC</p>
+        <div class="pkg-grid">
+          <a href="https://ideas.repec.org/c/boc/bocode/s459658.html" target="_blank" class="pkg-card">
+            <span class="pkg-name">XTQRPLOT</span>
+            <span class="pkg-desc">Entity-specific marginal effects from panel quantile regression</span>
+          </a>
+          <a href="https://ideas.repec.org/c/boc/bocode/s459660.html" target="_blank" class="pkg-card">
+            <span class="pkg-name">COEFCONV</span>
+            <span class="pkg-desc">Comprehensive marginal effects &amp; coefficient conversion</span>
+          </a>
+          <a href="https://ideas.repec.org/c/boc/bocode/s459661.html" target="_blank" class="pkg-card">
+            <span class="pkg-name">REGPROJECT</span>
+            <span class="pkg-desc">Post-estimation projection and boundary analysis</span>
+          </a>
+          <a href="https://ideas.repec.org/c/boc/bocode/s459665.html" target="_blank" class="pkg-card">
+            <span class="pkg-name">QMODPLOT</span>
+            <span class="pkg-desc">Quadratic moderation plots with confidence bands</span>
+          </a>
+          <a href="https://ideas.repec.org/c/boc/bocode/s459699.html" target="_blank" class="pkg-card">
+            <span class="pkg-name">XTBALFRONT</span>
+            <span class="pkg-desc">Balance frontier diagnostics for unbalanced panels</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  Time Series Analysis in Stata · Econometrics Made Easy with Stata · 12 videos · 13 links active
+</footer>
+
+</body>
+</html>
